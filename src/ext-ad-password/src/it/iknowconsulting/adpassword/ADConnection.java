@@ -11,14 +11,14 @@
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
-   limitations under the License. 
+   limitations under the License.
 */
 
 // Based on ADConnection
 // A Java class that encapsulates a JNDI connection to an Active Directory
-// Written by Jeremy E. Mortis  mortis@ucalgary.ca  2002-07-03 
+// Written by Jeremy E. Mortis  mortis@ucalgary.ca  2002-07-03
 //
-// References: 
+// References:
 // http://homepages.ucalgary.ca/~mortis/software/ADConnection.txt
 // http://ldapwiki.willeke.com/wiki/Example%20-%20Active%20Directory%20Change%20Password%20JNDI
 
@@ -37,54 +37,59 @@ import javax.naming.directory.SearchControls;
 
 public class ADConnection {
 
-    DirContext ldapContext;
-    String authLdapSearchBase;
+	DirContext ldapContext;
+	String authLdapSearchBase;
 
-    public ADConnection(Domain domain) throws NamingException {
-        String authLdapURL = domain.getAuthLdapURL()[0];
-        String authLdapSearchBindDn = domain.getAuthLdapSearchBindDn();
-        String authLdapSearchBindPassword = domain.getAuthLdapSearchBindPassword();
-        authLdapSearchBase = domain.getAuthLdapSearchBase();
+	public ADConnection(Domain domain) throws NamingException {
+		System.out.println("[ADConnection] Domain :"+domain);
+		String authLdapURL = domain.getAuthLdapURL()[0];
+		String authLdapSearchBindDn = domain.getAuthLdapSearchBindDn();
+		String authLdapSearchBindPassword = domain.getAuthLdapSearchBindPassword();
+		authLdapSearchBase = domain.getAuthLdapSearchBase();
 
-        Hashtable ldapEnv = new Hashtable(11);
-        ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        ldapEnv.put(Context.PROVIDER_URL, authLdapURL);
-        ldapEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
-        ldapEnv.put(Context.SECURITY_PRINCIPAL, authLdapSearchBindDn);
-        ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
-        ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
-        ldapContext = new InitialDirContext(ldapEnv);
-    }
+		Hashtable ldapEnv = new Hashtable(11);
+		ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
+		ldapEnv.put(Context.PROVIDER_URL, authLdapURL);
+		ldapEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
+		ldapEnv.put(Context.SECURITY_PRINCIPAL, authLdapSearchBindDn);
+		ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
+		ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
+		ldapContext = new InitialDirContext(ldapEnv);
+	}
 
-    public void updatePassword(String username, String password) throws NamingException {
-        String quotedPassword = "\"" + password + "\"";
-        char unicodePwd[] = quotedPassword.toCharArray();
-        byte pwdArray[] = new byte[unicodePwd.length * 2];
-        for (int i=0; i<unicodePwd.length; i++) {
-            pwdArray[i*2 + 1] = (byte) (unicodePwd[i] >>> 8);
-            pwdArray[i*2 + 0] = (byte) (unicodePwd[i] & 0xff);
-        }
-        ModificationItem[] mods = new ModificationItem[1];
-        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("UnicodePwd", pwdArray));
-        ldapContext.modifyAttributes("cn=" + username + "," + authLdapSearchBase, mods);
-    }
+	public void updatePassword(String username, String password) throws NamingException {
+		String quotedPassword = "\"" + password + "\"";
+		char unicodePwd[] = quotedPassword.toCharArray();
+		System.out.println("[ADConnection] updatePassword username:"+username+"  Password: "+password);
+		byte pwdArray[] = new byte[unicodePwd.length * 2];
+		for (int i=0; i<unicodePwd.length; i++) {
+			pwdArray[i*2 + 1] = (byte) (unicodePwd[i] >>> 8);
+			pwdArray[i*2 + 0] = (byte) (unicodePwd[i] & 0xff);
+		}
+		ModificationItem[] mods = new ModificationItem[1];
+		mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("UnicodePwd", pwdArray));
+		ldapContext.modifyAttributes("cn=" + username + "," + authLdapSearchBase, mods);
+	}
 
-    NamingEnumeration get(String searchFilter) throws NamingException {
-        String returnedAttrs[]={"givenName","sn","name","sAMAccountName","userPrincipalName","mail","userAccountControl"};
-        SearchControls searchControls = new SearchControls();
-        searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        searchControls.setReturningAttributes(returnedAttrs);
-        NamingEnumeration results = ldapContext.search(authLdapSearchBase, searchFilter, searchControls);
-        return results;        
-    }
-    
-    public NamingEnumeration getUsers() throws NamingException {
-        String searchFilter = "(userPrincipalName=*)";
-        return get(searchFilter);
-    }
+	NamingEnumeration get(String searchFilter) throws NamingException {
+		System.out.println("[ADConnection] get method searchFilter : "+searchFilter);
+		String returnedAttrs[]={"givenName","sn","name","sAMAccountName","userPrincipalName","mail","userAccountControl"};
+		SearchControls searchControls = new SearchControls();
+		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		searchControls.setReturningAttributes(returnedAttrs);
+		NamingEnumeration results = ldapContext.search(authLdapSearchBase, searchFilter, searchControls);
+		return results;
+	}
 
-    public NamingEnumeration fetchUser(String uid) throws NamingException {
-        String searchFilter = "(sAMAccountName="+uid+")";
-        return get(searchFilter);
-    }
+	public NamingEnumeration getUsers() throws NamingException {
+		System.out.println("[ADConnection] getUsers");
+		String searchFilter = "(userPrincipalName=*)";
+		return get(searchFilter);
+	}
+
+	public NamingEnumeration fetchUser(String uid) throws NamingException {
+		System.out.println("[ADConnection] fetchUser uid: "+uid);
+		String searchFilter = "(sAMAccountName="+uid+")";
+		return get(searchFilter);
+	}
 }

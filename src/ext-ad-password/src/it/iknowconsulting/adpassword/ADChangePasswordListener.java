@@ -11,7 +11,7 @@
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
-   limitations under the License. 
+   limitations under the License.
 */
 
 package it.iknowconsulting.adpassword;
@@ -27,25 +27,30 @@ import java.util.Map;
 import javax.naming.NamingException;
 
 public class ADChangePasswordListener extends ChangePasswordListener {
-            
-    @Override
-    public void preModify(Account acct, String newPassword, Map context, Map<String, Object> attrsToModify) throws ServiceException {
-        try {
-            Provisioning prov = Provisioning.getInstance();
-            Domain domain = prov.getDomain(acct);
-            Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-            // the keystore that holds trusted root certificates
-            System.setProperty("javax.net.ssl.trustStore", "/opt/zimbra/java/jre/lib/security/cacerts");
-            System.setProperty("javax.net.debug", "all");
-            ADConnection adc = new ADConnection(domain);
-            adc.updatePassword(acct.getDisplayName(), newPassword);
-        } catch (NamingException ex) {
-            throw AccountServiceException.PERM_DENIED(ex.toString());
-        }
-    }
-            
-    @Override
-    public void postModify(Account acct, String newPassword, Map context) {
-        // do nothing
-    }
+
+	@Override
+	public void preModify(Account acct, String newPassword, Map context, Map<String, Object> attrsToModify) throws ServiceException {
+		try {
+			System.out.println("[ADChangePasswordListener] in preModify");
+			Provisioning prov = Provisioning.getInstance();
+			Domain domain = prov.getDomain(acct);
+			Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+			// the keystore that holds trusted root certificates
+			System.setProperty("javax.net.ssl.trustStore", "/opt/zimbra/java/jre/lib/security/cacerts");
+			System.setProperty("javax.net.debug", "all");
+			ADConnection adc = new ADConnection(domain);
+			System.out.println("[ADChangePasswordListener] Domain : "+ domain);
+			System.out.println("[ADChangePasswordListener] Account : "+acct);
+			System.out.println("[ADChangePasswordListener] Account Name :"+acct.getDisplayName());
+			adc.updatePassword(acct.getDisplayName(), newPassword);
+		} catch (NamingException ex) {
+			System.out.println("[ADChangePasswordListener] Exception in NamingException : "+ex);
+			throw AccountServiceException.PERM_DENIED(ex.toString());
+		}
+	}
+
+	@Override
+	public void postModify(Account acct, String newPassword, Map context) {
+		// do nothing
+	}
 }

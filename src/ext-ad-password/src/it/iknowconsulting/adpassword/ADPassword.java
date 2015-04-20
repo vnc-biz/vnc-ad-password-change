@@ -11,7 +11,7 @@
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
-   limitations under the License. 
+   limitations under the License.
 */
 
 package it.iknowconsulting.adpassword;
@@ -21,20 +21,20 @@ import com.zimbra.cs.account.ldap.ChangePasswordListener;
 import com.zimbra.cs.extension.ZimbraExtension;
 
 public class ADPassword implements ZimbraExtension {
-    public ADPassword() {
-    }
-			
-    @Override
-    public void init() throws ServiceException {
-        ChangePasswordListener.register("ADPassword", new ADChangePasswordListener());
-    }
+	public ADPassword() {
+	}
 
-    @Override
-    public void destroy() {
-    }
+	@Override
+	public void init() throws ServiceException {
+		ChangePasswordListener.register("ADPassword", new ADChangePasswordListener());
+	}
 
-    @Override
-    public String getName() {
-        return "ADPassword";
-    }
+	@Override
+	public void destroy() {
+	}
+
+	@Override
+	public String getName() {
+		return "ADPassword";
+	}
 }
