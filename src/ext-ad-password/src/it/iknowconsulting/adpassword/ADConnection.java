@@ -46,6 +46,8 @@ public class ADConnection {
 		String authLdapSearchBindDn = domain.getAuthLdapSearchBindDn();
 		String authLdapSearchBindPassword = domain.getAuthLdapSearchBindPassword();
 		authLdapSearchBase = domain.getAuthLdapSearchBase();
+		System.out.println("[ADConnection] Search Bind DN :"+ domain.getAuthLdapSearchBindDn());
+		System.out.println("[ADConnection] Search Bind DN Password:"+ domain.getAuthLdapSearchBindPassword());
 
 		Hashtable ldapEnv = new Hashtable(11);
 		ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
