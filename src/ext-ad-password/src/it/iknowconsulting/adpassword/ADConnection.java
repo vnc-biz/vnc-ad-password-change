@@ -42,12 +42,16 @@ public class ADConnection {
 
 	public ADConnection(Domain domain) throws NamingException {
 		System.out.println("[ADConnection] Domain :"+domain);
+		
 		String authLdapURL = domain.getAuthLdapURL()[0];
 		String authLdapSearchBindDn = domain.getAuthLdapSearchBindDn();
 		String authLdapSearchBindPassword = domain.getAuthLdapSearchBindPassword();
 		authLdapSearchBase = domain.getAuthLdapSearchBase();
-		System.out.println("[ADConnection] Search Bind DN :"+ domain.getAuthLdapSearchBindDn());
-		System.out.println("[ADConnection] Search Bind DN Password:"+ domain.getAuthLdapSearchBindPassword());
+		
+		System.out.println("[ADConnection] authLdapURL :"+ authLdapURL);
+		System.out.println("[ADConnection] authLdapSearchBindDn :"+ authLdapSearchBindDn);
+		System.out.println("[ADConnection] authLdapSearchBindPassword :"+ authLdapSearchBindPassword);
+		System.out.println("[ADConnection] authLdapSearchBase:"+ authLdapSearchBase);
 
 		Hashtable ldapEnv = new Hashtable(11);
 		ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");

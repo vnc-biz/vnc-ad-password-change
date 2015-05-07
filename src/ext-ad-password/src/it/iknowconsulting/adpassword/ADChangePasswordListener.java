@@ -38,11 +38,13 @@ public class ADChangePasswordListener extends ChangePasswordListener {
 			// the keystore that holds trusted root certificates
 			System.setProperty("javax.net.ssl.trustStore", "/opt/zimbra/java/jre/lib/security/cacerts");
 			System.setProperty("javax.net.debug", "all");
-			ADConnection adc = new ADConnection(domain);
-			System.out.println("[ADChangePasswordListener] Domain : "+ domain);
-			System.out.println("[ADChangePasswordListener] Account : "+acct);
 			System.out.println("[ADChangePasswordListener] Account Name :"+acct.getDisplayName());
-			adc.updatePassword(acct.getDisplayName(), newPassword);
+			System.out.println("[ADChangePasswordListener] Account acct.getId() :"+acct.getId());
+			System.out.println("[ADChangePasswordListener] Account acct.getUid() :"+acct.getUid());
+			System.out.println("[ADChangePasswordListener] Account acct.getMail() :"+acct.getMail());
+			ADConnection adc = new ADConnection(domain);
+			System.out.println("[ADChangePasswordListener] After Create connection.");
+			adc.updatePassword(acct.getUid(), newPassword);
 		} catch (NamingException ex) {
 			System.out.println("[ADChangePasswordListener] Exception in NamingException : "+ex);
 			throw AccountServiceException.PERM_DENIED(ex.toString());
