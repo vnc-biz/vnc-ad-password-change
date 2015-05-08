@@ -39,19 +39,24 @@ public class ADConnection {
 
 	DirContext ldapContext;
 	String authLdapSearchBase;
+	String authLdapSearchFilter;
 
 	public ADConnection(Domain domain) throws NamingException {
 		System.out.println("[ADConnection] Domain :"+domain);
-		
+
 		String authLdapURL = domain.getAuthLdapURL()[0];
 		String authLdapSearchBindDn = domain.getAuthLdapSearchBindDn();
 		String authLdapSearchBindPassword = domain.getAuthLdapSearchBindPassword();
 		authLdapSearchBase = domain.getAuthLdapSearchBase();
-		
+		authLdapSearchFilter = domain.getAuthLdapSearchFilter();
+
 		System.out.println("[ADConnection] authLdapURL :"+ authLdapURL);
 		System.out.println("[ADConnection] authLdapSearchBindDn :"+ authLdapSearchBindDn);
 		System.out.println("[ADConnection] authLdapSearchBindPassword :"+ authLdapSearchBindPassword);
-		System.out.println("[ADConnection] authLdapSearchBase:"+ authLdapSearchBase);
+		System.out.println("[ADConnection] zimbraAuthLdapBindDn :"+ domain.getAuthLdapBindDn());
+		System.out.println("[ADConnection] zimbraAuthLdapSearchBindDn :"+ domain.getAuthLdapSearchBindDn());
+		System.out.println("[ADConnection] zimbraAuthLdapSearchBase :"+ authLdapSearchBase);
+		System.out.println("[ADConnection] zimbraAuthLdapSearchFilter :"+ domain.getAuthLdapSearchFilter());
 
 		Hashtable ldapEnv = new Hashtable(11);
 		ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
@@ -74,7 +79,7 @@ public class ADConnection {
 		}
 		ModificationItem[] mods = new ModificationItem[1];
 		mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("UnicodePwd", pwdArray));
-		ldapContext.modifyAttributes("cn=" + username + "," + authLdapSearchBase, mods);
+		ldapContext.modifyAttributes("cn=" + username + "," + authLdapSearchBase + "," + authLdapSearchFilter, mods);
 	}
 
 	NamingEnumeration get(String searchFilter) throws NamingException {
