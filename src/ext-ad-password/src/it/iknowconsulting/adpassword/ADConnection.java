@@ -27,17 +27,24 @@ package it.iknowconsulting.adpassword;
 import com.zimbra.cs.account.Domain;
 import java.util.Hashtable;
 import javax.naming.Context;
+import javax.naming.directory.Attributes;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.SearchResult;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import java.util.Properties;
+import java.io.UnsupportedEncodingException;
 
 public class ADConnection {
 
 	DirContext ldapContext;
+	//LdapContext ldapContext;
 	String authLdapSearchBase;
 	String authLdapSearchFilter;
 
@@ -59,6 +66,7 @@ public class ADConnection {
 		System.out.println("[ADConnection] zimbraAuthLdapSearchFilter :"+ domain.getAuthLdapSearchFilter());
 
 		Hashtable ldapEnv = new Hashtable(11);
+		//Properties ldapEnv = new Properties();
 		ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		ldapEnv.put(Context.PROVIDER_URL, authLdapURL);
 		ldapEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
@@ -66,6 +74,7 @@ public class ADConnection {
 		ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
 		ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
 		ldapContext = new InitialDirContext(ldapEnv);
+		//ldapContext = new InitialLdapContext(ldapEnv,null);
 	}
 
 	public void updatePassword(String username, String password) throws NamingException {
@@ -77,18 +86,81 @@ public class ADConnection {
 			pwdArray[i*2 + 1] = (byte) (unicodePwd[i] >>> 8);
 			pwdArray[i*2 + 0] = (byte) (unicodePwd[i] & 0xff);
 		}
+		NamingEnumeration cninfo = get(username);
+		String cnValue = null;
+		while(cninfo.hasMore())
+		{
+			Attributes attrs = ((SearchResult)cninfo.next()).getAttributes();			
+			if(attrs.get("distinguishedName") != null)
+			{
+				String[] cnPair = attrs.get("distinguishedName").toString().split(":");
+				cnValue = cnPair[1].trim();
+				System.out.println("cn user value=========="+cnValue);
+			}	
+		}
 		ModificationItem[] mods = new ModificationItem[1];
-		mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("UnicodePwd", pwdArray));
-		ldapContext.modifyAttributes("cn=" + username + "," + authLdapSearchBase + "," + authLdapSearchFilter, mods);
+		mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", pwdArray));
+		ldapContext.modifyAttributes(cnValue, mods);
+		
+    //LdapContext ctx =new InitialLdapContext(prop,null);
+/*     
+try{
+String oldPassword="abc1234ABC";
+     String newPassword="abc12345";
+     ModificationItem[] mods = new ModificationItem[2];
+     String oldQuotedPassword = "\"" + oldPassword + "\"";
+     byte[] oldUnicodePassword = oldQuotedPassword.getBytes("UTF-16LE");
+     String newQuotedPassword = "\"" + newPassword + "\"";
+     byte[] newUnicodePassword = newQuotedPassword.getBytes("UTF-16LE");
+
+     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                   new BasicAttribute("unicodePwd", oldUnicodePassword));
+     mods[1] = new ModificationItem(DirContext.ADD_ATTRIBUTE,
+                   new BasicAttribute("unicodePwd", newUnicodePassword));
+//ldapContext.modifyAttributes("cn=" + username + "," + authLdapSearchBase + "," + authLdapSearchFilter, mods);
+ldapContext.modifyAttributes("CN=vnc,OU=SBSUsers,OU=Users,OU=MyBusiness,DC=vnc,DC=local", mods);
+	
+}catch(UnsupportedEncodingException ex)
+	{
+		ex.printStackTrace();
+	} */
 	}
 
 	NamingEnumeration get(String searchFilter) throws NamingException {
+	
+		NamingEnumeration results= null;
+	try{	
 		System.out.println("[ADConnection] get method searchFilter : "+searchFilter);
-		String returnedAttrs[]={"givenName","sn","name","sAMAccountName","userPrincipalName","mail","userAccountControl"};
+		//String[] returnedAttrs = { "distinguishedName","cn","givenname","mail","sAMAccountName","dc","ou","name","dn"};
+		String[] returnedAttrs = { "distinguishedName","cn"};
 		SearchControls searchControls = new SearchControls();
 		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		searchControls.setReturningAttributes(returnedAttrs);
-		NamingEnumeration results = ldapContext.search(authLdapSearchBase, searchFilter, searchControls);
+		//NamingEnumeration results = ldapContext.search(authLdapSearchBase, searchFilter, searchControls);
+		 results = ldapContext.search(authLdapSearchBase, "sAMAccountName="+searchFilter, searchControls);
+
+		 /*if (results.hasMore()) {
+                	Attributes attrs = ((SearchResult) results.next()).getAttributes();
+			System.out.println("distinguishedName====>"+ attrs.get("distinguishedName"));
+                	System.out.println("givenName====>"+ attrs.get("givenName"));
+	                System.out.println("name=====>"+ attrs.get("name"));
+        	        System.out.println("cn======> "+ attrs.get("cn"));
+                	System.out.println("sAMAccountName====>"+ attrs.get("sAMAccountName"));
+	                System.out.println("mail======>"+ attrs.get("mail"));
+			System.out.println("dc======>"+ attrs.get("dc"));
+			System.out.println("ou======>"+ attrs.get("ou"));
+			System.out.println("dn======>"+ attrs.get("dn"));
+
+			//return results;
+        	    }else{
+                	//throw new Exception("Invalid User");
+			System.out.println("Error");
+        	    }*/	
+		}catch( NamingException ex)
+		{
+			ex.printStackTrace();
+		}
+
 		return results;
 	}
 
@@ -103,4 +175,4 @@ public class ADConnection {
 		String searchFilter = "(sAMAccountName="+uid+")";
 		return get(searchFilter);
 	}
-}
+	}
