@@ -63,6 +63,7 @@ public class ADConnection {
 		System.out.println("[ADConnection] zimbraAuthLdapBindDn :"+ domain.getAuthLdapBindDn());
 		System.out.println("[ADConnection] zimbraAuthLdapSearchBindDn :"+ domain.getAuthLdapSearchBindDn());
 		System.out.println("[ADConnection] zimbraAuthLdapSearchBase :"+ authLdapSearchBase);
+
 		System.out.println("[ADConnection] zimbraAuthLdapSearchFilter :"+ domain.getAuthLdapSearchFilter());
 
 		Hashtable ldapEnv = new Hashtable(11);
@@ -79,53 +80,42 @@ public class ADConnection {
 
 	public void updatePassword(String username, String password) throws NamingException {
 		String quotedPassword = "\"" + password + "\"";
-		char unicodePwd[] = quotedPassword.toCharArray();
+		
+		try{
+			final byte pwdArray[] = quotedPassword.getBytes("UTF-16LE");
+			
+
+		/*char unicodePwd[] = quotedPassword.toCharArray();
 		System.out.println("[ADConnection] updatePassword username:"+username+"  Password: "+password);
 		byte pwdArray[] = new byte[unicodePwd.length * 2];
 		for (int i=0; i<unicodePwd.length; i++) {
 			pwdArray[i*2 + 1] = (byte) (unicodePwd[i] >>> 8);
 			pwdArray[i*2 + 0] = (byte) (unicodePwd[i] & 0xff);
-		}
-		NamingEnumeration cninfo = get(username);
-		String cnValue = null;
-		while(cninfo.hasMore())
-		{
-			Attributes attrs = ((SearchResult)cninfo.next()).getAttributes();			
-			if(attrs.get("distinguishedName") != null)
+		}*/
+			NamingEnumeration cninfo = get(username);
+			String cnValue = null;
+			while(cninfo.hasMore())
 			{
-				String[] cnPair = attrs.get("distinguishedName").toString().split(":");
-				cnValue = cnPair[1].trim();
-				System.out.println("cn user value=========="+cnValue);
-			}	
-		}
-		ModificationItem[] mods = new ModificationItem[1];
-		mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", pwdArray));
-		ldapContext.modifyAttributes(cnValue, mods);
+				Attributes attrs = ((SearchResult)cninfo.next()).getAttributes();			
+				if(attrs.get("distinguishedName") != null)
+				{
+					String[] cnPair = attrs.get("distinguishedName").toString().split(":");
+					cnValue = cnPair[1].trim();
+					System.out.println("cn user value=========="+cnValue);
+				}	
+			}
+			ModificationItem[] mods = new ModificationItem[1];
+			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", pwdArray));
+			ldapContext.modifyAttributes(cnValue, mods);
 		
-    //LdapContext ctx =new InitialLdapContext(prop,null);
-/*     
-try{
-String oldPassword="abc1234ABC";
-     String newPassword="abc12345";
-     ModificationItem[] mods = new ModificationItem[2];
-     String oldQuotedPassword = "\"" + oldPassword + "\"";
-     byte[] oldUnicodePassword = oldQuotedPassword.getBytes("UTF-16LE");
-     String newQuotedPassword = "\"" + newPassword + "\"";
-     byte[] newUnicodePassword = newQuotedPassword.getBytes("UTF-16LE");
+		}catch(UnsupportedEncodingException ex)
+                {
+                        ex.printStackTrace();
+                }
+		
 
-     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
-                   new BasicAttribute("unicodePwd", oldUnicodePassword));
-     mods[1] = new ModificationItem(DirContext.ADD_ATTRIBUTE,
-                   new BasicAttribute("unicodePwd", newUnicodePassword));
-//ldapContext.modifyAttributes("cn=" + username + "," + authLdapSearchBase + "," + authLdapSearchFilter, mods);
-ldapContext.modifyAttributes("CN=vnc,OU=SBSUsers,OU=Users,OU=MyBusiness,DC=vnc,DC=local", mods);
+    	}
 	
-}catch(UnsupportedEncodingException ex)
-	{
-		ex.printStackTrace();
-	} */
-	}
-
 	NamingEnumeration get(String searchFilter) throws NamingException {
 	
 		NamingEnumeration results= null;
