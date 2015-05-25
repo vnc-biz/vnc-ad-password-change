@@ -74,6 +74,7 @@ public class ADConnection {
 		ldapEnv.put(Context.SECURITY_PRINCIPAL, authLdapSearchBindDn);
 		ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
 		ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
+		ldapEnv.put("com.sun.jndi.ldap.read.timeout", "10000");
 		ldapContext = new InitialDirContext(ldapEnv);
 		//ldapContext = new InitialLdapContext(ldapEnv,null);
 	}
@@ -108,6 +109,7 @@ public class ADConnection {
 			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", pwdArray));
 			ldapContext.modifyAttributes(cnValue, mods);
 		
+			ldapContext.close();
 		}catch(UnsupportedEncodingException ex)
                 {
                         ex.printStackTrace();
