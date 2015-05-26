@@ -44,30 +44,18 @@ import java.io.UnsupportedEncodingException;
 public class ADConnection {
 
 	DirContext ldapContext;
-	//LdapContext ldapContext;
 	String authLdapSearchBase;
 	String authLdapSearchFilter;
 
 	public ADConnection(Domain domain) throws NamingException {
-		System.out.println("[ADConnection] Domain :"+domain);
-
+		
 		String authLdapURL = domain.getAuthLdapURL()[0];
 		String authLdapSearchBindDn = domain.getAuthLdapSearchBindDn();
 		String authLdapSearchBindPassword = domain.getAuthLdapSearchBindPassword();
 		authLdapSearchBase = domain.getAuthLdapSearchBase();
 		authLdapSearchFilter = domain.getAuthLdapSearchFilter();
 
-		System.out.println("[ADConnection] authLdapURL :"+ authLdapURL);
-		System.out.println("[ADConnection] authLdapSearchBindDn :"+ authLdapSearchBindDn);
-		System.out.println("[ADConnection] authLdapSearchBindPassword :"+ authLdapSearchBindPassword);
-		System.out.println("[ADConnection] zimbraAuthLdapBindDn :"+ domain.getAuthLdapBindDn());
-		System.out.println("[ADConnection] zimbraAuthLdapSearchBindDn :"+ domain.getAuthLdapSearchBindDn());
-		System.out.println("[ADConnection] zimbraAuthLdapSearchBase :"+ authLdapSearchBase);
-
-		System.out.println("[ADConnection] zimbraAuthLdapSearchFilter :"+ domain.getAuthLdapSearchFilter());
-
 		Hashtable ldapEnv = new Hashtable(11);
-		//Properties ldapEnv = new Properties();
 		ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		ldapEnv.put(Context.PROVIDER_URL, authLdapURL);
 		ldapEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
@@ -75,8 +63,7 @@ public class ADConnection {
 		ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
 		ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
 		ldapEnv.put("com.sun.jndi.ldap.read.timeout", "10000");
-		ldapContext = new InitialDirContext(ldapEnv);
-		//ldapContext = new InitialLdapContext(ldapEnv,null);
+		ldapContext = new InitialDirContext(ldapEnv);		
 	}
 
 	public void updatePassword(String username, String password) throws NamingException {
@@ -85,14 +72,6 @@ public class ADConnection {
 		try{
 			final byte pwdArray[] = quotedPassword.getBytes("UTF-16LE");
 			
-
-		/*char unicodePwd[] = quotedPassword.toCharArray();
-		System.out.println("[ADConnection] updatePassword username:"+username+"  Password: "+password);
-		byte pwdArray[] = new byte[unicodePwd.length * 2];
-		for (int i=0; i<unicodePwd.length; i++) {
-			pwdArray[i*2 + 1] = (byte) (unicodePwd[i] >>> 8);
-			pwdArray[i*2 + 0] = (byte) (unicodePwd[i] & 0xff);
-		}*/
 			NamingEnumeration cninfo = get(username);
 			String cnValue = null;
 			while(cninfo.hasMore())
@@ -101,8 +80,7 @@ public class ADConnection {
 				if(attrs.get("distinguishedName") != null)
 				{
 					String[] cnPair = attrs.get("distinguishedName").toString().split(":");
-					cnValue = cnPair[1].trim();
-					System.out.println("cn user value=========="+cnValue);
+					cnValue = cnPair[1].trim();					
 				}	
 			}
 			ModificationItem[] mods = new ModificationItem[1];
@@ -120,34 +98,14 @@ public class ADConnection {
 	
 	NamingEnumeration get(String searchFilter) throws NamingException {
 	
-		NamingEnumeration results= null;
-	try{	
-		System.out.println("[ADConnection] get method searchFilter : "+searchFilter);
-		//String[] returnedAttrs = { "distinguishedName","cn","givenname","mail","sAMAccountName","dc","ou","name","dn"};
-		String[] returnedAttrs = { "distinguishedName","cn"};
-		SearchControls searchControls = new SearchControls();
-		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-		searchControls.setReturningAttributes(returnedAttrs);
-		//NamingEnumeration results = ldapContext.search(authLdapSearchBase, searchFilter, searchControls);
-		 results = ldapContext.search(authLdapSearchBase, "sAMAccountName="+searchFilter, searchControls);
-
-		 /*if (results.hasMore()) {
-                	Attributes attrs = ((SearchResult) results.next()).getAttributes();
-			System.out.println("distinguishedName====>"+ attrs.get("distinguishedName"));
-                	System.out.println("givenName====>"+ attrs.get("givenName"));
-	                System.out.println("name=====>"+ attrs.get("name"));
-        	        System.out.println("cn======> "+ attrs.get("cn"));
-                	System.out.println("sAMAccountName====>"+ attrs.get("sAMAccountName"));
-	                System.out.println("mail======>"+ attrs.get("mail"));
-			System.out.println("dc======>"+ attrs.get("dc"));
-			System.out.println("ou======>"+ attrs.get("ou"));
-			System.out.println("dn======>"+ attrs.get("dn"));
-
-			//return results;
-        	    }else{
-                	//throw new Exception("Invalid User");
-			System.out.println("Error");
-        	    }*/	
+	NamingEnumeration results= null;
+		try{	
+			String[] returnedAttrs = { "distinguishedName","cn"};
+			SearchControls searchControls = new SearchControls();
+			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+			searchControls.setReturningAttributes(returnedAttrs);
+			results = ldapContext.search(authLdapSearchBase, "sAMAccountName="+searchFilter, searchControls);
+			
 		}catch( NamingException ex)
 		{
 			ex.printStackTrace();
@@ -157,13 +115,11 @@ public class ADConnection {
 	}
 
 	public NamingEnumeration getUsers() throws NamingException {
-		System.out.println("[ADConnection] getUsers");
 		String searchFilter = "(userPrincipalName=*)";
 		return get(searchFilter);
 	}
 
 	public NamingEnumeration fetchUser(String uid) throws NamingException {
-		System.out.println("[ADConnection] fetchUser uid: "+uid);
 		String searchFilter = "(sAMAccountName="+uid+")";
 		return get(searchFilter);
 	}

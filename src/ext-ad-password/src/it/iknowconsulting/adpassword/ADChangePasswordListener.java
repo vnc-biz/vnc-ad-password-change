@@ -31,19 +31,14 @@ public class ADChangePasswordListener extends ChangePasswordListener {
 	@Override
 	public void preModify(Account acct, String newPassword, Map context, Map<String, Object> attrsToModify) throws ServiceException {
 		try {
-			System.out.println("[ADChangePasswordListener] in preModify");
 			Provisioning prov = Provisioning.getInstance();
 			Domain domain = prov.getDomain(acct);
 			Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+			
 			// the keystore that holds trusted root certificates
 			System.setProperty("javax.net.ssl.trustStore", "/opt/zimbra/java/jre/lib/security/cacerts");
 			System.setProperty("javax.net.debug", "all");
-			System.out.println("[ADChangePasswordListener] Account Name :"+acct.getDisplayName());
-			System.out.println("[ADChangePasswordListener] Account acct.getId() :"+acct.getId());
-			System.out.println("[ADChangePasswordListener] Account acct.getUid() :"+acct.getUid());
-			System.out.println("[ADChangePasswordListener] Account acct.getMail() :"+acct.getMail());
 			ADConnection adc = new ADConnection(domain);
-			System.out.println("[ADChangePasswordListener] After Create connection.");
 			adc.updatePassword(acct.getUid(), newPassword);
 		} catch (NamingException ex) {
 			System.out.println("[ADChangePasswordListener] Exception in NamingException : "+ex);
