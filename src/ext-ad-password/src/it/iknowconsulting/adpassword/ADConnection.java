@@ -62,7 +62,10 @@ public class ADConnection {
 		ldapEnv.put(Context.SECURITY_PRINCIPAL, authLdapSearchBindDn);
 		ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
 		ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
+		ldapEnv.put(Context.REFERRAL, "follow");
+		ldapEnv.put("java.naming.ldap.version", "2");
 		ldapEnv.put("com.sun.jndi.ldap.read.timeout", "10000");
+		
 		ldapContext = new InitialDirContext(ldapEnv);		
 	}
 
