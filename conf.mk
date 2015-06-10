@@ -1,4 +1,4 @@
-VERSION=1.0.1.8
+VERSION=1.0.1.9
 PACKAGE=vnc-ad-password-change
 MAINTAINER=Dhaval Yoganandi <dhaval.yoganandi@vnc.biz>
 SECTION=commercial/zcs-util
