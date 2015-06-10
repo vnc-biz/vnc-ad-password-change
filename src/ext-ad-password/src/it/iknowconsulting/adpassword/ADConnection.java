@@ -54,7 +54,7 @@ public class ADConnection {
 		String authLdapSearchBindPassword = domain.getAuthLdapSearchBindPassword();
 		authLdapSearchBase = domain.getAuthLdapSearchBase();
 		authLdapSearchFilter = domain.getAuthLdapSearchFilter();
-
+		
 		Hashtable ldapEnv = new Hashtable(11);
 		ldapEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		ldapEnv.put(Context.PROVIDER_URL, authLdapURL);
@@ -62,8 +62,8 @@ public class ADConnection {
 		ldapEnv.put(Context.SECURITY_PRINCIPAL, authLdapSearchBindDn);
 		ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
 		ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
-		ldapEnv.put(Context.REFERRAL, "follow");
-		ldapEnv.put("java.naming.ldap.version", "2");
+		//ldapEnv.put(Context.REFERRAL, "follow");
+		//ldapEnv.put("java.naming.ldap.version", "2");
 		ldapEnv.put("com.sun.jndi.ldap.read.timeout", "10000");
 		
 		ldapContext = new InitialDirContext(ldapEnv);		
@@ -99,7 +99,7 @@ public class ADConnection {
 
     	}
 	
-	NamingEnumeration get(String searchFilter) throws NamingException {
+	NamingEnumeration get(String accountName) throws NamingException {
 	
 	NamingEnumeration results= null;
 		try{	
@@ -107,7 +107,9 @@ public class ADConnection {
 			SearchControls searchControls = new SearchControls();
 			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 			searchControls.setReturningAttributes(returnedAttrs);
-			results = ldapContext.search(authLdapSearchBase, "sAMAccountName="+searchFilter, searchControls);
+			String searchFilter = "(&"+authLdapSearchFilter+"(sAMAccountName=" + accountName + "))";
+			
+			results = ldapContext.search(authLdapSearchBase, searchFilter, searchControls);
 			
 		}catch( NamingException ex)
 		{
