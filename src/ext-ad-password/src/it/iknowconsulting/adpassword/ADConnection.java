@@ -62,8 +62,8 @@ public class ADConnection {
 		ldapEnv.put(Context.SECURITY_PRINCIPAL, authLdapSearchBindDn);
 		ldapEnv.put(Context.SECURITY_CREDENTIALS, authLdapSearchBindPassword);
 		ldapEnv.put(Context.SECURITY_PROTOCOL, "ssl");
-		//ldapEnv.put(Context.REFERRAL, "follow");
-		//ldapEnv.put("java.naming.ldap.version", "2");
+		ldapEnv.put(Context.REFERRAL, "follow");
+		ldapEnv.put("java.naming.ldap.version", "2");
 		ldapEnv.put("com.sun.jndi.ldap.read.timeout", "10000");
 		
 		ldapContext = new InitialDirContext(ldapEnv);		
@@ -77,26 +77,42 @@ public class ADConnection {
 			
 			NamingEnumeration cninfo = get(username);
 			String cnValue = null;
+			boolean isSuccess = false;
+			ModificationItem[] mods = new ModificationItem[1];
 			while(cninfo.hasMore())
 			{
-				Attributes attrs = ((SearchResult)cninfo.next()).getAttributes();			
-				if(attrs.get("distinguishedName") != null)
+				try{
+
+					Attributes attrs = ((SearchResult)cninfo.next()).getAttributes();			
+					if(attrs.get("distinguishedName") != null)
+					{
+						String[] cnPair = attrs.get("distinguishedName").toString().split(":");
+						cnValue = cnPair[1].trim();
+
+						mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", pwdArray));
+                        			ldapContext.modifyAttributes(cnValue, mods);
+						isSuccess = true;
+					}
+					if(isSuccess)
+					{
+						break;
+					}
+				}catch(Exception ex)
 				{
-					String[] cnPair = attrs.get("distinguishedName").toString().split(":");
-					cnValue = cnPair[1].trim();					
+					System.out.println("User infor=====>"+cnValue);
+					System.out.println("User Exception ====>"+ex.getMessage());
+					if(ex instanceof NamingException)
+					{
+						throw new NamingException("Naming exception==>"+ex.getMessage());
+					}
 				}	
 			}
-			ModificationItem[] mods = new ModificationItem[1];
-			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", pwdArray));
-			ldapContext.modifyAttributes(cnValue, mods);
-		
+					
 			ldapContext.close();
 		}catch(UnsupportedEncodingException ex)
                 {
                         ex.printStackTrace();
                 }
-		
-
     	}
 	
 	NamingEnumeration get(String accountName) throws NamingException {
