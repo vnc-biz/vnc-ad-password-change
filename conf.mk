@@ -1,7 +1,7 @@
-VERSION=1.0.1.10
+VERSION=1.0.1.11
 PACKAGE=vnc-ad-password-change
-MAINTAINER=Dhaval Yoganandi <dhaval.yoganandi@vnc.biz>
-SECTION=commercial/zcs-util
+MAINTAINER=Stefan Sänger <stefan.saenger@vnc.biz>
+SECTION=free/zcs-util
 PRIORITY=optional
 DEPENDS=
 DESCRIPTION=ADPassword change extension
