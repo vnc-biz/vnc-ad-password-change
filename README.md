@@ -24,6 +24,10 @@ If you already have zmpkg installed, just type as zimbra user:
 * If Test passed succesfully, click Finish
 * Assign the new External change password listener: `ADPassword`
 
+## Add the certificate from your Active Directory to the Zimbra server trust
+
+* /opt/zimbra/j2sdk-20140721/bin/keytool -import -alias cacertclass1ca -keystore /opt/zimbra/java/jre/lib/security/cacerts -import -trustcacerts -file your-exported-cert.cer 
+* default password: changeit
 
 
 ## License
