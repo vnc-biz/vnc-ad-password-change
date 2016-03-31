@@ -22,7 +22,7 @@ If you already have zmpkg installed, just type as zimbra user:
 * Check "Use DN/Password to bind to external server"
 * Enter the Bind DN `cn=Administrator,cn=users,dc=SERVER,dc=EXT` and its password
 * If Test passed succesfully, click Finish
-* Assign the new change password listener ADPassword
+* Assign the new External change password listener: `ADPassword`
 
 
 
