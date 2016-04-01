@@ -17,12 +17,20 @@ If you already have zmpkg installed, just type as zimbra user:
 * Open the Zimbra Administration console
 * Select External LDAP as authentication mechanism
 * Type the LDAP URL and check Use SSL on port 636
-* Type `samaccountname=%u` in the LDAP filter field
+* Type `(samaccountname=%u)` in the LDAP filter field
 * Specify `cn=users,dc=SERVER,dc=EXT` in the LDAP search base field
 * Check "Use DN/Password to bind to external server"
 * Enter the Bind DN `cn=Administrator,cn=users,dc=SERVER,dc=EXT` and its password
 * If Test passed succesfully, click Finish
 * Assign the new External change password listener: `ADPassword`
+* From the cli run as Zimbra user:
+
+         zmprov md yourdomain.com zimbraAuthLdapSearchBase "cn=users,dc=SERVER,dc=EXT"
+         zmprov md yourdomain.com zimbraAuthLdapSearchFilter "(samaccountname=%u)"
+         zmprov md yourdomain.com zimbraExternalGroupLdapSearchBase "cn=users,dc=SERVER,dc=EXT"
+         zmprov md yourdomain.com zimbraExternalGroupLdapSearchFilter "(samaccountname=%u)"
+         zmprov md yourdomain.com zimbraPasswordChangeListener ADPassword
+
 
 ## Add the certificate from your Active Directory to the Zimbra server trust
 
