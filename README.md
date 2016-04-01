@@ -16,7 +16,7 @@ If you already have zmpkg installed, just type as zimbra user:
 
 * Open the Zimbra Administration console
 * Select External LDAP as authentication mechanism
-* Type the LDAP URL and check Use SSL on port 636
+* Type the LDAP URL and check Use SSL on port 636 (your certificate must be trusted, see below)
 * Type `(samaccountname=%u)` in the LDAP filter field
 * Specify `cn=users,dc=SERVER,dc=EXT` in the LDAP search base field
 * Check "Use DN/Password to bind to external server"
@@ -30,12 +30,15 @@ If you already have zmpkg installed, just type as zimbra user:
          zmprov md yourdomain.com zimbraExternalGroupLdapSearchBase "cn=users,dc=SERVER,dc=EXT"
          zmprov md yourdomain.com zimbraExternalGroupLdapSearchFilter "(samaccountname=%u)"
          zmprov md yourdomain.com zimbraPasswordChangeListener ADPassword
+         zmcontrol restart
 
 
 ## Add the certificate from your Active Directory to the Zimbra server trust
 
 * /opt/zimbra/j2sdk-20140721/bin/keytool -import -alias cacertclass1ca -keystore /opt/zimbra/java/jre/lib/security/cacerts -import -trustcacerts -file your-exported-cert.cer 
 * default password: changeit
+
+* This Zimlet may require you to open port 8443
 
 
 ## License
